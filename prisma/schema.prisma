@@ -1,0 +1,105 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model Store {
+  id         String      @map("_id") @id @default(uuid())
+  userId     String
+  name       String
+  createdAt  DateTime                @default(now())
+  updatedAt  DateTime                @default(now())
+
+  billboards Billboard[]
+  categories Category[]
+  sizes      Size[]
+  colors     Color[]
+  products   Product[]
+}
+
+model Billboard {
+  id         String     @map("_id") @id @default(uuid())
+  storeId    String
+  store      Store      @relation(fields: [storeId], references: [id])
+  label      String
+  imageUrl   String
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @default(now())
+
+  categories Category[]
+}
+
+model Category {
+  id          String    @map("_id") @id @default(uuid())
+  storeId     String
+  store       Store     @relation(fields: [storeId], references: [id])
+  name        String
+  billboardId String
+  billboard   Billboard @relation(fields: [billboardId], references: [id])
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @default(now())
+
+  products    Product[]
+}
+
+model Size {
+  id        String    @map("_id") @id @default(uuid())
+  storeId   String
+  store     Store     @relation(fields: [storeId], references: [id])
+  name      String
+  value     String
+  productId String[]
+  products  Product[] @relation(fields: [productId], references: [id])
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @default(now())
+}
+
+model Color {
+  id        String    @map("_id") @id @default(uuid())
+  storeId   String
+  store     Store     @relation(fields: [storeId], references: [id])
+  name      String
+  value     String
+  productId String[]
+  products  Product[] @relation(fields: [productId], references: [id])
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @default(now())
+}
+
+model Image {
+  id        String   @map("_id") @id @default(uuid())
+  url       String
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+}
+
+model Product {
+  id         String   @map("_id") @id @default(uuid())
+  storeId    String
+  store      Store    @relation(fields: [storeId], references: [id])
+  name       String
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+  quantity   Int
+  price      Float
+  isArchived Boolean              @default(false)
+  isFeatured Boolean              @default(false)
+  sizeId     String[]
+  sizes      Size[]   @relation(fields: [sizeId], references: [id])
+  colorId    String[]
+  colors     Color[]  @relation(fields: [colorId], references: [id])
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+
+  images     Image[]
+}
